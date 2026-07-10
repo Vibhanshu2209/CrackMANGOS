@@ -5,7 +5,7 @@ class MyHashMap:
 
     def __init__(self, capacity: int = MAX):
         self.capacity = capacity
-        self.arr = [None for _ in range(capacity)]
+        self.arr = [[] for _ in range(capacity)]
 
 
     def hashFunction(self, value:str):
@@ -14,24 +14,29 @@ class MyHashMap:
     def __str__(self):
         return str(self.arr)
     
-    def findKey(self, key: int):
-        for i, x in enumerate(self.arr):
-            if x and key == x[0]: return i
+    def findIndexForKey(self, bucket:list, key: int):
+        for i, (k, v) in enumerate(bucket):
+            if key == k:return i
         return -1
     
+    def getBucket(self, key):
+        return self.arr[key % self.capacity]
     
     def put(self, key: str, value):
-        index = self.findKey(key)
-        if index != -1: self.arr[index][1] = value
-        else: self.arr.append([key, value])
+        bucket = self.getBucket(key)
+        index = self.findIndexForKey(bucket, key)
+        if index != -1: bucket[index][1] = value
+        else: bucket.append([key, value])
 
 
     def get(self, key):
-        index = self.findKey(key)
+        bucket = self.getBucket(key)
+        index = self.findIndexForKey(bucket, key)
         if index == -1: return -1
-        return self.arr[index][1]
+        return bucket[index][1]
     
     def remove(self, key):
-        index = self.findKey(key)
+        bucket = self.getBucket(key)
+        index = self.findIndexForKey(bucket, key)
         if index == -1: return
-        del self.arr[index]
+        del bucket[index]
