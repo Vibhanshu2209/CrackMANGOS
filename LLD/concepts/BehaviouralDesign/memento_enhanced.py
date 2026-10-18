@@ -3,6 +3,11 @@ Following arjan codes: The Memento pattern: Saving State Without Breaking Encaps
 """
 
 
+
+"""
+TODO: Try this in langgraph agentic workflow PRP project
+"""
+
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -18,19 +23,28 @@ class Snapshotable[T](Protocol):
 class History[T]:
 
     def __init__(self):
-        self._snapshots: list[T] = []
+        self._undo: list[T] = []
+        self._redo: list[T] = []
 
     def save(self, obj: Snapshotable[T]) -> None:
-        self._snapshots.append(obj.snapshot())
+        self._undo.append(obj.snapshot())
+        self._redo.clear()
 
     def undo(self, obj: Snapshotable[T]) -> bool:
-        if not self._snapshots:
+        if not self._undo:
             return False
 
-        obj.restore(self._snapshots.pop())
-
+        self._redo.append(obj.snapshot())
+        obj.restore(self._undo.pop())
         return True
 
+    def redo(self, obj: Snapshotable[T]) -> bool:
+        if not self._redo:
+            return False
+
+        self._undo.append(obj.snapshot())
+        obj.restore(self._redo.pop())
+        return True
 
 
 @dataclass
@@ -82,5 +96,9 @@ workflow.add_step(Step("send_confirmation to email"))
 
 print(f"{workflow.describe()}")
 history.undo(workflow)
+
+print(f"{workflow.describe()}")
+history.redo(workflow)
+
 
 print(f"{workflow.describe()}")
